@@ -1,0 +1,4 @@
+
+pandas==2.3.3
+networkx==3.4.2
+pytest==9.1.1

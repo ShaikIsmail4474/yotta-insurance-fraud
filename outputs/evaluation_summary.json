@@ -1,0 +1,11 @@
+{
+  "claims_evaluated": 5000,
+  "true_positive": 25,
+  "false_positive": 0,
+  "false_negative": 0,
+  "true_negative": 4975,
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1_score": 1.0,
+  "note": "Evaluation only. Ground truth is not used by the fraud-risk scoring process."
+}

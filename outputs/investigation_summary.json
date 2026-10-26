@@ -1,0 +1,9 @@
+{
+  "claims_in_report": 5000,
+  "high_risk_claims": 25,
+  "medium_risk_claims": 0,
+  "low_risk_claims": 4975,
+  "high_risk_claims_with_invoice": 25,
+  "high_risk_claims_with_payment": 7,
+  "note": "Risk indicators prioritize manual review. They do not establish that fraud occurred. Ground-truth labels were not loaded."
+}

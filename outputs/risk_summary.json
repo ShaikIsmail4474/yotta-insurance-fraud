@@ -1,0 +1,7 @@
+{
+  "claims_scored": 5000,
+  "high_risk": 25,
+  "medium_risk": 0,
+  "low_risk": 4975,
+  "scoring_method": "Transparent rule-based baseline"
+}
