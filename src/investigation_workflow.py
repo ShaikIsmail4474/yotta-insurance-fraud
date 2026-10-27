@@ -23,6 +23,11 @@ def explain_connection(connection):
         for relationship in relationships
     })
 
+    strengths = sorted({
+        relationship.get("strength", "context")
+        for relationship in relationships
+    })
+
     explanations = {
         "SHARES_CONTACT": (
             "A shared contact detail may indicate a relationship; "
@@ -57,8 +62,14 @@ def explain_connection(connection):
         for edge_type in edge_types
     ]
 
+    strength_note = (
+        "Relationship strength: " + ", ".join(strengths) + "."
+    )
+
     return (
         " ".join(reasons)
+        + " "
+        + strength_note
         + " Connections are investigative leads, not proof of fraud."
     )
 
@@ -101,7 +112,7 @@ def build_network_evidence(
         max_hops=max_hops,
     )
 
-    # Add a human-readable explanation without removing existing fields.
+    # Add explanations while preserving the original connection fields.
     for connection in connections:
         connection["explanation"] = explain_connection(connection)
 
