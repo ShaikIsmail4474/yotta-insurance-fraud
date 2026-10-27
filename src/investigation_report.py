@@ -20,6 +20,21 @@ PAYMENTS_FILE = DATA_DIR / "payments.csv"
 EDGES_FILE = DATA_DIR / "relationship_edges.csv"
 
 
+def count_shared_contact_edges(edges):
+    """Count SHARES_CONTACT edges for both source and target entities."""
+    contact_edges = edges[
+        edges["edge_type"].astype(str).eq("SHARES_CONTACT")
+    ]
+
+    return pd.concat(
+        [
+            contact_edges["source_id"],
+            contact_edges["target_id"],
+        ],
+        ignore_index=True,
+    ).value_counts()
+
+
 def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -82,23 +97,28 @@ def main():
         report["phone"].map(phone_counts).fillna(0).astype(int)
     )
 
-    # Count graph edges for the claimant and provider.
-    claimant_edge_counts = edges[
-        edges["edge_type"].astype(str).str.contains(
-            "SHARED_CONTACT", case=False, na=False
-        )
-    ].groupby("source_id").size()
+    # Count SHARES_CONTACT edges for both endpoints.
+    claimant_edge_counts = count_shared_contact_edges(edges)
 
-    provider_claim_counts = claims.groupby("provider_id")["claim_id"].nunique()
+    # Count unique claims associated with each provider.
+    provider_claim_counts = (
+        claims.groupby("provider_id")["claim_id"].nunique()
+    )
 
     report["shared_contact_edges"] = (
-        report["claimant_id"].map(claimant_edge_counts).fillna(0).astype(int)
+        report["claimant_id"]
+        .map(claimant_edge_counts)
+        .fillna(0)
+        .astype(int)
     )
     report["claims_for_provider"] = (
-        report["provider_id"].map(provider_claim_counts).fillna(0).astype(int)
+        report["provider_id"]
+        .map(provider_claim_counts)
+        .fillna(0)
+        .astype(int)
     )
 
-    # Explain the score using existing evidence and observable details.
+    # Explain the score using operational evidence.
     def make_investigation_note(row):
         reasons = []
 
@@ -121,7 +141,9 @@ def main():
             )
 
         if not reasons:
-            reasons.append("No high-risk rule triggered in the current baseline")
+            reasons.append(
+                "No high-risk rule triggered in the current baseline"
+            )
 
         return "; ".join(reasons)
 
@@ -130,9 +152,12 @@ def main():
     )
 
     # Create a prioritized work queue.
-    report["priority"] = report["risk_level"].map(
-        {"HIGH": 1, "MEDIUM": 2, "LOW": 3}
-    ).fillna(4).astype(int)
+    report["priority"] = (
+        report["risk_level"]
+        .map({"HIGH": 1, "MEDIUM": 2, "LOW": 3})
+        .fillna(4)
+        .astype(int)
+    )
 
     report = report.sort_values(
         ["priority", "risk_score", "claim_id"],
@@ -164,10 +189,12 @@ def main():
     ]
 
     report[columns].to_csv(
-        OUTPUT_DIR / "investigation_report.csv", index=False
+        OUTPUT_DIR / "investigation_report.csv",
+        index=False,
     )
 
     high_risk = report[report["risk_level"] == "HIGH"]
+
     summary = {
         "claims_in_report": int(len(report)),
         "high_risk_claims": int((report["risk_level"] == "HIGH").sum()),
@@ -187,7 +214,8 @@ def main():
     }
 
     (OUTPUT_DIR / "investigation_summary.json").write_text(
-        json.dumps(summary, indent=2), encoding="utf-8"
+        json.dumps(summary, indent=2),
+        encoding="utf-8",
     )
 
     print("Investigation report created.")
