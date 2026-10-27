@@ -188,7 +188,7 @@ Outputs include:
 pytest -q
 ```
 
-The current development environment has passed 12 automated tests. Run the tests again after making changes and before submission.
+The current development environment has passed 33 automated tests. Run `python -m pytest -q` again after making changes and before submission.
 
 ## Current Synthetic Dataset
 
