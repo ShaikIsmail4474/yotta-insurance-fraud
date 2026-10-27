@@ -53,3 +53,18 @@ def test_open_network_investigation_creates_audited_case(tmp_path):
     history = get_audit_history(result["case_id"], db_path=test_db)
     assert len(history) == 1
     assert history[0]["action"] == "CASE_CREATED"
+def test_explain_connection_describes_shared_address():
+    from src.investigation_workflow import explain_connection
+
+    connection = {
+        "relationships": [
+            {
+                "edge_type": "SHARES_ADDRESS",
+            }
+        ]
+    }
+
+    explanation = explain_connection(connection)
+
+    assert "shared address" in explanation.lower()
+    assert "not proof of fraud" in explanation.lower()

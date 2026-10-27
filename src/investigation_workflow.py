@@ -6,11 +6,61 @@ from pathlib import Path
 from src.case_management import create_case
 from src.network_analysis import find_connected_entities, load_relationship_graph
 
+
 DEFAULT_DB = (
     Path(__file__).resolve().parent.parent
     / "data"
     / "insurance_fraud.db"
 )
+
+
+def explain_connection(connection):
+    """Explain why a connected entity may deserve investigation."""
+    relationships = connection["relationships"]
+
+    edge_types = sorted({
+        relationship["edge_type"]
+        for relationship in relationships
+    })
+
+    explanations = {
+        "SHARES_CONTACT": (
+            "A shared contact detail may indicate a relationship; "
+            "verify whether it is legitimate."
+        ),
+        "SHARES_ADDRESS": (
+            "A shared address may reflect a household or common location; "
+            "it is not proof of fraud."
+        ),
+        "CLAIM_USES_PROVIDER": (
+            "The claim is associated with a service provider."
+        ),
+        "CLAIMANT_HAS_POLICY": (
+            "The connection involves a claimant and an insurance policy."
+        ),
+        "CLAIM_LINKED_TO_INCIDENT": (
+            "The connection involves a claim and its reported incident."
+        ),
+        "CLAIM_BELONGS_TO_CLAIMANT": (
+            "The claim is associated with its claimant."
+        ),
+        "CLAIM_USES_POLICY": (
+            "The claim is associated with an insurance policy."
+        ),
+    }
+
+    reasons = [
+        explanations.get(
+            edge_type,
+            f"The path includes a {edge_type} relationship.",
+        )
+        for edge_type in edge_types
+    ]
+
+    return (
+        " ".join(reasons)
+        + " Connections are investigative leads, not proof of fraud."
+    )
 
 
 def build_network_evidence(
@@ -23,12 +73,18 @@ def build_network_evidence(
     if not isinstance(claim_id, str) or not claim_id.strip():
         raise ValueError("claim_id is required.")
 
-    if not isinstance(max_hops, int) or isinstance(max_hops, bool) or max_hops < 1:
+    if (
+        not isinstance(max_hops, int)
+        or isinstance(max_hops, bool)
+        or max_hops < 1
+    ):
         raise ValueError("max_hops must be an integer of at least 1.")
 
     graph_kwargs = {}
+
     if edges_path is not None:
         graph_kwargs["edges_path"] = edges_path
+
     if claims_path is not None:
         graph_kwargs["claims_path"] = claims_path
 
@@ -44,6 +100,10 @@ def build_network_evidence(
         claim_id,
         max_hops=max_hops,
     )
+
+    # Add a human-readable explanation without removing existing fields.
+    for connection in connections:
+        connection["explanation"] = explain_connection(connection)
 
     relationship_types = sorted({
         relationship["edge_type"]
