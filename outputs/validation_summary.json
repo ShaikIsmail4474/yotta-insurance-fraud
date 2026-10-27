@@ -1,0 +1,31 @@
+{
+  "project": "Synthetic Insurance Fraud Detection",
+  "seed": 42,
+  "validation": {
+    "status": "PASS",
+    "issues_found": 0,
+    "command": "python src/validate_data.py"
+  },
+  "reproducibility": {
+    "status": "PASS",
+    "command": "python src/check_reproducibility.py",
+    "all_checksums_match": true,
+    "datasets_checked": 9
+  },
+  "record_counts": {
+    "claimants": 2000,
+    "providers": 500,
+    "policies": 2000,
+    "incidents": 3000,
+    "claims": 5000,
+    "invoices": 5000,
+    "payments": 1987,
+    "relationship_edges": 8000,
+    "ground_truth": 5009
+  },
+  "limitations": [
+    "Data is synthetic and does not establish real-world fraud-detection performance.",
+    "Ground-truth labels are for evaluation, not operational fraud detection.",
+    "Shared addresses and other relationships are investigative leads, not proof of fraud."
+  ]
+}
